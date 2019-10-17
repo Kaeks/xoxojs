@@ -72,6 +72,154 @@
 		}
 	}
 
+	function getMinPropertyOf(list, property) {
+		let smallest;
+		for (let i = 0; i < list.length; i++) {
+			if (i === 0 || list[i][property] < smallest) {
+				smallest = list[i][property];
+			}
+		}
+		return smallest;
+	}
+
+	function getMaxPropertyOf(list, property) {
+		let largest;
+		for (let i = 0; i < list.length; i++) {
+			if (i === 0 || list[i][property] > largest) {
+				largest = list[i][property];
+			}
+		}
+		return largest;
+	}
+
+	class Shape {
+		minX;
+		maxX;
+		minY;
+		maxY;
+
+		width;
+		height;
+
+		constructor() {
+		}
+
+		getMinX() {return this.minX}
+		getMaxX() {return this.maxX}
+		getMinY() {return this.minY}
+		getMaxY() {return this.maxY}
+		getWidth() {return this.width}
+		getHeight() {return this.height}
+
+		calcSpace() {
+			this.width = this.getMaxX() - this.getMinX();
+			this.height = this.getMaxY() - this.getMinY();
+		}
+
+		scale() {
+		}
+
+		drawAt(position) {
+		}
+	}
+
+	class Circle extends Shape {
+		radius;
+
+		constructor(radius) {
+			super();
+			this.radius = radius;
+			this.calcSpace();
+		}
+
+		calcSpace() {
+			this.minX = -this.radius;
+			this.maxX = this.radius;
+			this.minY = -this.radius;
+			this.maxY = this.radius;
+			super.calcSpace();
+		}
+
+		scale(factor) {
+			return new Circle(this.radius * factor);
+		}
+
+		drawAt(position, fill, stroke, thickness) {
+			context.beginPath();
+			context.arc(position.x, position.y, this.radius, 0, 2 * Math.PI);
+			context.closePath();
+			if (fill) context.fill();
+			if (stroke) {
+				if (thickness) {
+					context.save();
+					context.lineWidth = thickness;
+				}
+				context.stroke();
+				if (thickness) {
+					context.restore()
+				}
+			}
+		}
+	}
+
+	class Polygon extends Shape {
+		points;
+
+		constructor(points) {
+			super();
+			this.points = points;
+			this.calcSpace();
+		}
+
+		addPoint(point, index) {
+			if (index !== undefined) {
+				this.points.splice(index, 0, point);
+			} else {
+				this.points.push(point);
+			}
+			this.calcSpace();
+		}
+
+		calcSpace() {
+			this.minX = getMinPropertyOf(this.points, 0);
+			this.maxX = getMaxPropertyOf(this.points, 0);
+			this.minY = getMinPropertyOf(this.points, 1);
+			this.maxY = getMaxPropertyOf(this.points, 1);
+			super.calcSpace();
+		}
+
+		scale(factor) {
+			let points = [];
+			for (let i = 0; i < this.points.length; i++) {
+				points.push([ this.points[i][0] * factor, this.points[i][1] * factor ]);
+			}
+			return new Polygon(points);
+		}
+
+		drawAt(position, fill, stroke, thickness) {
+			context.beginPath();
+			for (let i = 0; i < this.points.length; i++) {
+				if (i === 0) {
+					context.moveTo(position.x + this.points[i][0], position.y + this.points[i][1]);
+				} else {
+					context.lineTo(position.x + this.points[i][0], position.y + this.points[i][1]);
+				}
+			}
+			context.closePath();
+			if (fill) context.fill();
+			if (stroke) {
+				if (thickness) {
+					context.save();
+					context.lineWidth = thickness;
+				}
+				context.stroke();
+				if (thickness) {
+					context.restore()
+				}
+			}
+		}
+	}
+
 	class GameObject {
 		position;
 
